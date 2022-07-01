@@ -1,6 +1,7 @@
 mod lib;
 mod application;
 mod krenderer;
+mod kaudio;
 mod game;
 
 use application::*;

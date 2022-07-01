@@ -76,6 +76,12 @@ impl Application {
                     self.yres = physical_size.height as f32;
                     unsafe {self.gl.viewport(0, 0, physical_size.width as i32, physical_size.height as i32)};
                 },
+                WindowEvent::Focused(false) => {
+                    self.game.paused = true;
+                },
+                WindowEvent::Focused(true) => {
+                    self.game.paused = false;
+                }
                 _ => {},
             _ => {},
             }

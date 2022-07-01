@@ -22,3 +22,10 @@ How is audio engine gonna work
   * lol when you're hurt music goes into dub mode
   * cpal calls the callback to get the data, how much do I provide at a time?
   * what format are my playing chunks in? ideally we can talk in samples
+
+
+  * I guess mixer just does state machine stuff, im going to let per sample be the dictator
+  * so like whatever sample we are up to gets to be the current sound effect
+    * do we ever get interrupted by the audio thread?
+
+  * i guess we store a list of (&buf, start_sample, gain) and when we want the next 1000 samples we compute maybe window sizes of where we do the same shit, mix them in

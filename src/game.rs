@@ -25,6 +25,8 @@ pub struct Game {
     t_next_spawn: f64,
 
     difficulty_level: i32,
+
+    pub paused: bool,
 }
 
 impl Game {
@@ -49,13 +51,13 @@ impl Game {
             t_next_spawn: 0.0,
 
             difficulty_level: 0,
+
+            paused: false,
         }
     }
 
     pub fn frame(&mut self, inputs: &FrameInputState, kc: &mut KRCanvas) {
-        self.t += inputs.dt;
-
-        let player_speed = 0.55;
+        let player_speed = 0.59;
         let enemy_speed = 0.45;
         let enemy_steer_amount = 9.0;
 
@@ -68,7 +70,18 @@ impl Game {
         let fireball_self_damage = 0.4;
         let enemy_damage = 0.2;
         let game_rect = Rect::new(-1.0, -1.0, 2.0, 2.0);
-
+        
+        let walls = vec![
+            Rect::new(-1.0, -1.0, 0.9, 0.1),
+            Rect::new(0.1, -1.0, 0.9, 0.1),
+            Rect::new(-1.0, 0.9, 0.9, 0.1),
+            Rect::new(0.1, 0.9, 0.9, 0.1),
+            
+            Rect::new(-1.0, -1.0, 0.1, 0.9),
+            Rect::new(0.9, -1.0, 0.1, 0.9),
+            Rect::new(-1.0, 0.1, 0.1, 0.9),
+            Rect::new(0.9, 0.1, 0.1, 0.9),
+        ];
 
         let fgs = vec![
             Vec4::new(0.9, 0.0, 0.0, 1.0),
@@ -98,6 +111,9 @@ impl Game {
         let fg = foreground_min.lerp(foreground_max, lerp_t);
         let bg = background_min.lerp(background_max, lerp_t);
      
+        if !self.paused {
+        self.t += inputs.dt;
+
         // spawn
         if self.t > self.t_next_spawn {
             self.t_next_spawn += spawn_interval;
@@ -125,21 +141,12 @@ impl Game {
 
         if inputs.just_pressed(VirtualKeyCode::R) && self.is_player == false {
             *self = Game::new();
+            return;
         }
 
         let mut dead_enemies: Vec<usize> = Vec::new();
 
-        let walls = vec![
-            Rect::new(-1.0, -1.0, 0.9, 0.1),
-            Rect::new(0.1, -1.0, 0.9, 0.1),
-            Rect::new(-1.0, 0.9, 0.9, 0.1),
-            Rect::new(0.1, 0.9, 0.9, 0.1),
-            
-            Rect::new(-1.0, -1.0, 0.1, 0.9),
-            Rect::new(0.9, -1.0, 0.1, 0.9),
-            Rect::new(-1.0, 0.1, 0.1, 0.9),
-            Rect::new(0.9, 0.1, 0.1, 0.9),
-        ];
+
 
         if self.is_player && self.is_fireball == false && self.t > self.explosion_end && inputs.lmb == KeyStatus::JustPressed {
             // spawn fireball
@@ -148,28 +155,28 @@ impl Game {
             self.fireball_pos = self.player_pos;
             self.fireball_vel = (mouse_world - self.player_pos).normalize() * 2.0;
         }
-        
-        let player_vel = {
-            // let mut player_vel = Vec2::new(0.0, 0.0);
-            let mut player_vel = self.player_vel;
+        let player_steer = {
+            let mut steer = Vec2::new(0.0, 0.0);
             if inputs.pressed(VirtualKeyCode::W) {
-                player_vel.y = (player_vel.y - 1.0).max(-1.0);
+                steer.y = (steer.y - 1.0).max(-1.0);
             }
             if inputs.pressed(VirtualKeyCode::S) {
-                player_vel.y = (player_vel.y + 1.0).min(1.0);
+                steer.y = (steer.y + 1.0).min(1.0);
             }
             if inputs.pressed(VirtualKeyCode::A) {
-                player_vel.x = (player_vel.x -  1.0).max(-1.0);
+                steer.x = (steer.x -  1.0).max(-1.0);
             }
             if inputs.pressed(VirtualKeyCode::D) {
-                player_vel.x = (player_vel.x + 1.0).min(1.0);
+                steer.x = (steer.x + 1.0).min(1.0);
             }
-            player_vel.normalize();
-            player_vel * player_speed
+            steer.normalize()
         };
-        self.player_vel = player_vel;
+        self.player_vel = 0.5 * self.player_vel;
 
-        self.player_pos = self.player_pos + player_vel * inputs.dt as f32;
+        let frame_vmag = (player_speed * player_steer + self.player_vel).magnitude();
+        let frame_vdir = (player_speed * player_steer + self.player_vel).normalize();
+        let frame_v = frame_vmag.min(player_speed) * frame_vdir;
+        self.player_pos = self.player_pos + frame_v * inputs.dt as f32;
 
         if self.is_player {
             self.player_health = (self.player_health + 0.1 * inputs.dt as f32).min(1.0);
@@ -301,6 +308,8 @@ impl Game {
             self.is_fireball = false;
         }
 
+        } // depause
+
         kc.set_colour(bg);
         kc.set_depth(1.0);
         kc.rect(game_rect);
@@ -322,6 +331,12 @@ impl Game {
         }
         if self.is_fireball {
             kc.circle(self.fireball_pos, fireball_radius);
+        }
+
+        if self.paused {
+            kc.set_colour(Vec4::new(1.0, 1.0, 1.0, 0.5));
+            kc.set_depth(10.0);
+            kc.rect(game_rect);
         }
     }
 }
