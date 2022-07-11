@@ -53,6 +53,83 @@ pub fn chance(seed: u32, percent: f32) -> bool {
     krand(seed) < percent
 }
 
+pub fn kfloor(x: f32) -> f32 {
+    x.floor()
+    // let f = if x < 0.0 {
+    // } else {
+    //     x.floor()
+    // };
+    // f 
+}
+
+// rounds down
+pub fn kround(x: f32, m: f32) -> f32 {
+    kfloor(x / m) * m
+}
+
+pub fn seed_grid(seed: u32, x: f32, y: f32, spacing: f32) -> u32 {
+        let xseed = (kround(x,spacing)/spacing) as i32;
+        let yseed = (kround(y,spacing)/spacing) as i32;
+        (seed as i32).wrapping_add(xseed * 1232412325).wrapping_add(yseed * 1413512387) as u32
+}
+
+#[test]
+fn test_seed_grid() {
+    assert_eq!(
+        seed_grid(0, 0.5, 0.5, 1.0),
+        seed_grid(0, 0.9, 0.9, 1.0)
+    );
+    assert_eq!(
+        seed_grid(0, -0.5, -0.5, 1.0),
+        seed_grid(0, -0.9, -0.9, 1.0)
+    );
+    assert_eq!(
+        seed_grid(0, 0.5, -0.5, 1.0),
+        seed_grid(0, 0.9, -0.9, 1.0)
+    );
+    assert_eq!(
+        seed_grid(0, -0.5, 0.5, 1.0),
+        seed_grid(0, -0.9, 0.9, 1.0)
+    );
+
+
+
+    assert_eq!(
+        seed_grid(0, 0.05, 0.05, 0.1),
+        seed_grid(0, 0.09, 0.09, 0.1)
+    );
+
+    // these should be nonzero
+    assert_eq!(
+        seed_grid(0, -0.05, -0.05, 0.1),
+        seed_grid(0, -0.09, -0.09, 0.1)
+    );
+    assert_eq!(
+        seed_grid(0, 0.05, -0.05, 0.1),
+        seed_grid(0, 0.09, -0.09, 0.1)
+    );
+    assert_eq!(
+        seed_grid(0, -0.05, 0.05, 0.1),
+        seed_grid(0, -0.09, 0.09, 0.1)
+    );
+}
+
+#[test]
+fn test_round() {
+    let eps = 0.0001;
+    let approx_eq = |x1: f32, x2: f32| {
+        println!("{} {}", x1, x2);
+        (x1 - x2).abs() < eps
+    };
+    assert!(approx_eq(kround(10.5, 0.1), 10.5));
+    assert!(approx_eq(kround(10.5, 0.2), 10.4));
+    assert!(approx_eq(kround(10.5, 10.0), 10.0));
+    assert!(approx_eq(kround(10.5, 1.0), 10.0));
+    assert!(approx_eq(kround(0.05, 0.02), 0.04));
+    assert!(approx_eq(kround(-0.05, 0.02), -0.06));
+    assert!(approx_eq(kround(-0.05, 0.1), -0.1));
+}
+
 /***************************************************
  * Vec
  ***************************************************/
@@ -71,6 +148,7 @@ impl Vec2 {
     pub fn dist(&self, other: Vec2) -> f32 { (*self - other).magnitude() }
     pub fn normalize(&self) -> Vec2 { let m = self.magnitude(); if m == 0.0 { *self } else { self.div_scalar(self.magnitude()) }}
     pub fn lerp(&self, other: Vec2, t: f32) -> Vec2 { Vec2::new(self.x*(1.0-t) + other.x*(t), self.y*(1.0-t) + other.y*(t)) }
+    pub fn dot(&self, other: Vec2) -> f32 {self.x*other.x + self.y*other.y}
     pub fn rotate(&self, radians: f32) -> Vec2 { 
         Vec2::new(
             self.x * radians.cos() - self.y * radians.sin(), 
@@ -530,4 +608,18 @@ impl Triangle {
         Rect { x: min_x, y: min_y, w: max_x - min_x, h: max_y - min_y }
 
     }
+}
+
+
+#[test]
+fn test_floor() {
+    println!("floor -0.5 {}", kfloor(-0.5));
+    println!("floor -0.5 {}", kfloor(-0.3));
+    println!("floor -0.5 {}", kfloor(-0.0001));
+    println!("floor -0.5 {}", kfloor(-1.0001));
+    println!("floor -0.5 {}", kfloor(-0.9999));
+    println!("floor -0.5 {}", (-0.5f32).floor());
+    println!("floor -0.5 {}", (-0.1f32).floor());
+    println!("floor -0.5 {}", (-0.9999f32).floor());
+    println!("floor -0.5 {}", (-0.00001f32).floor());
 }

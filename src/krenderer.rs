@@ -80,14 +80,14 @@ pub struct KRCanvas {
 }
 
 impl KRCanvas {
-    pub fn new() -> KRCanvas {
+    pub fn new(screen_rect: Rect) -> KRCanvas {
         KRCanvas {
             depth: 1.0,
             colour: Vec4::new(0.0, 0.0, 0.0, 1.0), 
             buf: Vec::new(),
             uv_clip: Rect::new(0.0, 0.0, 1.0/20.0, 1.0/20.0),
             uv_from: Rect::new(-1000.0, -1000.0, 2000.0, 2000.0),
-            from_rect: Rect::new(-1.0, -1.0, 2.0, 2.0),
+            from_rect: screen_rect,
         }
     }
     pub fn set_colour(&mut self, c: Vec4) {
@@ -97,7 +97,9 @@ impl KRCanvas {
     pub fn set_depth(&mut self, d: f32) {
         self.depth = d;
     }
-
+    pub fn set_camera(&mut self, cam: Rect) {
+        self.from_rect = cam;
+    }
     pub fn triangle(&mut self, a: Vec2, b: Vec2, c: Vec2) {
         self.uv_from = Triangle{a,b,c}.aabb();
         let write_float_bytes = |buf: &mut Vec<u8>, x: f32| {
@@ -150,11 +152,17 @@ impl KRCanvas {
             self.triangle(center, center.offset_r_theta(radius, theta_1), center.offset_r_theta(radius, theta_2));
         }
     }
+    pub fn poly_part(&mut self, center: Vec2, radius: f32, from_theta: f32, to_theta: f32, n_sides: i32) {
+        for i in 0..n_sides {
+            let theta_1 = from_theta + i as f32 * (to_theta - from_theta) / n_sides as f32;
+            let theta_2 = from_theta + (i+1) as f32 * (to_theta - from_theta) / n_sides as f32;
+            self.triangle(center, center.offset_r_theta(radius, theta_1), center.offset_r_theta(radius, theta_2));
+        }
+    }
 
     pub fn circle(&mut self, center: Vec2, radius: f32) {
         self.poly(center, radius, 40);
     }
-
     pub fn bytes(self) -> Vec<u8> {
         self.buf
     }

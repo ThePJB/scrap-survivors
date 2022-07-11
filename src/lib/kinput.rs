@@ -3,7 +3,7 @@ use crate::lib::kmath::*;
 use std::collections::HashMap;
 use std::time::{SystemTime, Instant, Duration};
 
-use glutin::event::VirtualKeyCode;
+use glutin::event::{VirtualKeyCode, MouseScrollDelta};
 
 use glutin::event::ElementState;
 use glutin::event::MouseButton;
@@ -12,6 +12,7 @@ use glutin::event::WindowEvent::KeyboardInput;
 use glutin::event::WindowEvent::MouseInput;
 use glutin::event::WindowEvent::CursorMoved;
 use glutin::event::WindowEvent::Resized;
+use glutin::event::WindowEvent::MouseWheel;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum KeyStatus {
@@ -30,6 +31,8 @@ pub struct FrameInputState {
     pub lmb: KeyStatus,
     pub rmb: KeyStatus,
     pub mmb: KeyStatus,
+    pub scroll_up: bool,
+    pub scroll_down: bool,
     pub t: f64,
     pub dt: f64,
     pub frame: u32,
@@ -75,6 +78,8 @@ impl EventAggregator {
                 lmb: KeyStatus::Released, 
                 rmb: KeyStatus::Released, 
                 mmb: KeyStatus::Released, 
+                scroll_down: false,
+                scroll_up: false,
                 t: 0.0,
                 dt: 0.0,
                 frame: 0,
@@ -131,6 +136,23 @@ impl EventAggregator {
                     self.instant_mouse_pos = Vec2::new(pos.x as f32 / self.yres, pos.y as f32 / self.yres);
                 },
 
+                // mouse scroll
+                MouseWheel {
+                    delta: d,
+                    ..
+                } => {
+                    match d {
+                        MouseScrollDelta::LineDelta(_horz, vert) => {
+                            if *vert > 0.0 {
+                                self.current.scroll_up = true;
+                            } else {
+                                self.current.scroll_down = true;
+                            }
+                        },
+                        _ => {panic!("gotta handle px delta too boss")},
+                    }
+                }
+
                 // Resize
                 Resized(physical_size) => {
                     self.xres = physical_size.width as f32;
@@ -154,6 +176,8 @@ impl EventAggregator {
                 self.current.mouse_pos = self.instant_mouse_pos;
                 let state = self.current.clone();
                 self.current.seed = khash(self.current.seed * 196513497);
+                self.current.scroll_up = false;
+                self.current.scroll_down = false;
                 self.current.keys.retain(|k, v| match v {KeyStatus::JustReleased => false, _ => true});
                 for (k, v) in self.current.keys.iter_mut() {
                     match v {

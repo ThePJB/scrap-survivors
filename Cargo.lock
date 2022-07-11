@@ -1069,22 +1069,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "round-survival"
-version = "0.1.0"
-dependencies = [
- "assert_hex",
- "glow",
- "glutin",
- "itertools",
- "ordered-float",
- "palette",
- "png",
- "serde",
- "serde_json",
- "winit",
-]
-
-[[package]]
 name = "rustc-serialize"
 version = "0.3.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1107,6 +1091,22 @@ name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
+
+[[package]]
+name = "scrap-survivor"
+version = "0.1.0"
+dependencies = [
+ "assert_hex",
+ "glow",
+ "glutin",
+ "itertools",
+ "ordered-float",
+ "palette",
+ "png",
+ "serde",
+ "serde_json",
+ "winit",
+]
 
 [[package]]
 name = "serde"

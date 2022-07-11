@@ -92,7 +92,7 @@ impl Application {
             
             unsafe { self.gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT); } 
 
-            let mut kc = KRCanvas::new();
+            let mut kc = KRCanvas::new(inputs.screen_rect);
 
             self.game.frame(&inputs, &mut kc);
 
@@ -143,7 +143,7 @@ fn  make_shader(gl: &glow::Context, vert_paths: &[&str], frag_paths: &[&str]) ->
 
 unsafe fn opengl_boilerplate(xres: f32, yres: f32, event_loop: &glutin::event_loop::EventLoop<()>) -> (glow::Context, glutin::WindowedContext<glutin::PossiblyCurrent>) {
     let window_builder = glutin::window::WindowBuilder::new()
-        .with_title("round survival")
+        .with_title("scrap survivor")
         .with_inner_size(glutin::dpi::PhysicalSize::new(xres, yres));
     let window = glutin::ContextBuilder::new()
         // .with_depth_buffer(0)
