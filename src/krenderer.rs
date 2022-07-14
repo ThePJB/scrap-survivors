@@ -56,7 +56,7 @@ impl KRenderer {
             gl.bind_vertex_array(Some(self.vao));
             gl.bind_buffer(glow::ARRAY_BUFFER, Some(self.vbo));
             gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, buf, glow::DYNAMIC_DRAW);
-            let vert_count = buf.len() / (7*4);
+            let vert_count = buf.len() / (9*4);
             gl.draw_arrays(glow::TRIANGLES, 0, vert_count as i32);
         }
     }
