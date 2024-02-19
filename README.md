@@ -7,7 +7,7 @@ building
 enemies but they are jank
 spawning is jank too, is it just gonna be minecraft spawning?
 
-player attacking: point in cone, fuck it ill just have a circle collider lol, approximately a cone
+player attacking: point in cone, stuff it ill just have a circle collider lol, approximately a cone
 or we could have arc of circle and basically constrain it like that
 yea plus i can draw it
 
@@ -27,7 +27,7 @@ how to apply a velocity gracefully with position based dynamics - after the fixu
 or have a separate velocity field for knockback / sliding - like i do with player
 
 cull / spawn defs not working.
-this is a shitshow but it will get there have faith
+this is a stuffshow but it will get there have faith
 
 
 ccd enemies do come from somewhere
